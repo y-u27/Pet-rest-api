@@ -2,7 +2,7 @@ import express from "express";
 import { connectDB } from "./config/db";
 // import cors from "cors";
 import getRoutes from "./routes/get";
-// import postRoutes from "./routes/post";
+import postRoutes from "./routes/post";
 
 const app = express();
 const port = 3000;
@@ -15,12 +15,12 @@ connectDB()
 
     //ルート設定
     app.use("/api",getRoutes);
-    // app.use("/api",postRoutes);
+    app.use("/api",postRoutes);
 
     //サーバ起動
     app.listen(port, () => {
       console.log(
-        `Server is runnning on http://localhost:${port}/pet-database`
+        `Server is running on http://localhost:${port}/api`
       );
     });
   })

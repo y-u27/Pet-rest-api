@@ -1,0 +1,13 @@
+###
+http://localhost:3000/api
+
+###
+POST http://localhost:3000/api/pet
+Content-Type: application/json
+{
+  "category":"犬",
+  "name":"りん",
+  "photoUrls":"",
+  "tags":"",
+  "status":"健康"
+}
