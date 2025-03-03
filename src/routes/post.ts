@@ -4,7 +4,7 @@ import { connectDB } from "../config/db";
 const router = Router();
 
 // ~/api/petのpostデータ作成
-router.post("/api/pet", async (req: Request, res: Response) => {
+router.post("/pet", async (req: Request, res: Response) => {
   try {
     const db = await connectDB();
     const newPet = req.body;
