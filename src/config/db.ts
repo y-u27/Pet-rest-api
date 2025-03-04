@@ -1,6 +1,6 @@
 //モジュールのインポート
-import { Db, MongoClient } from "mongodb";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 
 dotenv.config();
 
@@ -11,24 +11,15 @@ if (!uri) {
   process.exit(1);
 }
 
-//MongoDB クライアント作成
-const client = new MongoClient(uri);
-let db: Db | null = null;
-
 //DB接続情報（サーバー起動時に1回だけDB接続）
-export async function connectDB(): Promise<Db> {
-  if (!db) {
-    try {
-      await client.connect();
-      db = client.db("pet-database");
-      console.log("MongoDBに接続しました");
-    } catch (error) {
-      console.error("データベース接続エラー", error);
-      process.exit(1);
-    }
+export async function connectDB() {
+  try {
+    await mongoose.connect(uri, {
+      dbName: "pet-database",
+    });
+    console.log("MongoDBに接続しました");
+  } catch (error) {
+    console.error("データベース接続エラー", (error as Error).message);
+    process.exit(1);
   }
-  return db;
 }
-
-//DB インスタンスエクスポート
-export { db, client };
