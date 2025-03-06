@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 const router = Router();
 
 // GET
-router.get("/pets", async (req: Request, res: Response) => {
+router.get("/pet", async (req: Request, res: Response) => {
   try {
     const pets = await Pet.find();
     res.json(pets);
@@ -16,7 +16,7 @@ router.get("/pets", async (req: Request, res: Response) => {
 });
 
 // POST
-router.post("/pets", async (req: Request, res: Response) => {
+router.post("/pet", async (req: Request, res: Response) => {
   try {
     const newPet = new Pet(req.body);
     const result = await newPet.save();
@@ -33,7 +33,7 @@ router.post("/pets", async (req: Request, res: Response) => {
 });
 
 // PUT
-router.put("/pets/:id", async (req: Request, res: Response): Promise<void> => {
+router.put("/pet/:id", async (req: Request, res: Response): Promise<void> => {
   try {
     const petId = req.params.id;
 
@@ -68,7 +68,7 @@ router.put("/pets/:id", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET pet/{petid}
-router.get("/pets/:id", async (req: Request, res: Response) => {
+router.get("/pet/:id", async (req: Request, res: Response) => {
   try {
     const petsId = req.params.id;
 
@@ -94,13 +94,13 @@ router.get("/pets/:id", async (req: Request, res: Response) => {
 });
 
 // POST pet/{petid}
-// router.post("/pets/:id",async(req:Request,res:Response) => {
+// router.post("/pet/:id",async(req:Request,res:Response) => {
 
 // })
 
 // DELETE pet/{petid}
 router.delete(
-  "/pets/:id",
+  "/pet/:id",
   async (req: Request, res: Response): Promise<void> => {
     try {
       const petId = req.params.id;
