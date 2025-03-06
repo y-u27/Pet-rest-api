@@ -4,7 +4,7 @@ import { Pet } from "../../models/Pet";
 const router = Router();
 
 // GET
-router.get("/pets", async (req: Request, res: Response) => {
+router.get("/pet", async (req: Request, res: Response) => {
   try {
     if(!req.query.status) {
       res.status(400).json({error:"ステータスが指定されていません"});
