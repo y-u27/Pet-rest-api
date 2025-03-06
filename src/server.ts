@@ -1,6 +1,8 @@
 import express from "express";
 import { connectDB } from "./config/db";
 import apiRoutes from "./routes/pet/index";
+import apiStatus from "./routes/pet/findByStatus";
+// import apiTags from "./routes/pet/findByTags";
 
 const app = express();
 const port = 3000;
@@ -13,6 +15,8 @@ connectDB()
 
     //ルート設定
     app.use("/api", apiRoutes);
+    app.use("/api", apiStatus);
+    // app.use("/api", apiTags);
 
     //サーバ起動
     app.listen(port, () => {
