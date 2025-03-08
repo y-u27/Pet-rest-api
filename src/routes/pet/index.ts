@@ -1,10 +1,13 @@
 import { Router, Request, Response } from "express";
 import { Pet } from "../../models/Pet";
 import { ObjectId } from "mongodb";
+import { Categories } from "../../models/Categories";
+import { Tags } from "../../models/Tags";
+import mongoose from "mongoose";
 
 const router = Router();
 
-// GET
+// GET pet
 router.get("/pet", async (req: Request, res: Response) => {
   try {
     const pets = await Pet.find();
@@ -15,11 +18,67 @@ router.get("/pet", async (req: Request, res: Response) => {
   }
 });
 
-// POST
+// GET categories
+router.get("/categories", async (req: Request, res: Response) => {
+  try {
+    const categories = await Categories.find();
+    res.json(categories);
+  } catch (error) {
+    console.error("ペットデータ取得エラー", (error as Error).message);
+    res.status(500).json({ error: "ペットデータ取得に失敗" });
+  }
+});
+
+// GET tags
+router.get("/tags", async (req: Request, res: Response) => {
+  try {
+    const tags = await Tags.find();
+    res.json(tags);
+  } catch (error) {
+    console.error("ペットデータ取得エラー", (error as Error).message);
+    res.status(500).json({ error: "ペットデータ取得に失敗" });
+  }
+});
+
+// POST pet
 router.post("/pet", async (req: Request, res: Response) => {
   try {
     const newPet = new Pet(req.body);
     const result = await newPet.save();
+
+    console.log("保存結果", result);
+
+    res
+      .status(201)
+      .json({ message: "新しいペットが追加されました", data: result });
+  } catch (error) {
+    console.error("追加エラー", (error as Error).message);
+    res.status(500).json({ error: "ペットデータ追加失敗" });
+  }
+});
+
+// POST categories
+router.post("/categories", async (req: Request, res: Response) => {
+  try {
+    const newCategories = new Categories(req.body);
+    const result = await newCategories.save();
+
+    console.log("保存結果", result);
+
+    res
+      .status(201)
+      .json({ message: "新しいペットが追加されました", data: result });
+  } catch (error) {
+    console.error("追加エラー", (error as Error).message);
+    res.status(500).json({ error: "ペットデータ追加失敗" });
+  }
+});
+
+// POST tags
+router.post("/tags", async (req: Request, res: Response) => {
+  try {
+    const newTags = new Tags(req.body);
+    const result = await newTags.save();
 
     console.log("保存結果", result);
 
@@ -67,6 +126,69 @@ router.put("/pet/:id", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// findByStatus
+router.get("/pet", async (req: Request, res: Response) => {
+  try {
+    if (!req.query.status) {
+      res.status(400).json({ error: "ステータスが指定されていません" });
+      return;
+    }
+
+    const status = (req.query.status as string).trim().toLowerCase();
+    const petStatus = await Pet.find({
+      status: new RegExp("^" + status + "$", "i"),
+    });
+
+    if (petStatus.length === 0) {
+      res
+        .status(404)
+        .json({ error: "指定されたステータスのペットが見つかりませんでした" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "指定したステータスのペット情報の取得に成功",
+      data: petStatus,
+    });
+  } catch (error) {
+    console.error("ステータス取得エラー", (error as Error).message);
+    res.status(500).json({ error: "ステータスデータ取得失敗" });
+  }
+});
+
+// findByTags
+router.get("/pet", async (req: Request, res: Response) => {
+  try {
+    if (!req.query.tagsId) {
+      res.status(400).json({ error: "タグIDが指定されていません" });
+      return;
+    }
+    
+    const tagsId = req.query.tagsId as string;
+
+    if (!mongoose.Types.ObjectId.isValid(tagsId)) {
+      res.status(400).json({error:"無効なID形式です"});
+      return;
+    }
+
+    const objectId = new mongoose.Types.ObjectId(tagsId);
+
+    const pets = await Pet.find({ tagsId: objectId });
+
+    if (pets.length === 0) {
+      res.status(404).json({ error: "指定されたタグのペットが見つかりません" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: "指定したタグのペット情報の取得に成功", data: pets });
+  } catch (error) {
+    console.error("取得エラー", (error as Error).message);
+    res.status(500).json({ error: "タグデータ取得に失敗" });
+  }
+});
+
 // GET pet/{petid}
 router.get("/pet/:id", async (req: Request, res: Response) => {
   try {
@@ -92,11 +214,6 @@ router.get("/pet/:id", async (req: Request, res: Response) => {
     res.status(500).json({ error: "ペットデータ取得に失敗" });
   }
 });
-
-// POST pet/{petid}
-// router.post("/pet/:id",async(req:Request,res:Response) => {
-
-// })
 
 // DELETE pet/{petid}
 router.delete(
