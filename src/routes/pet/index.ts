@@ -127,7 +127,7 @@ router.put("/pet/:id", async (req: Request, res: Response): Promise<void> => {
 });
 
 // findByStatus
-router.get("/pet", async (req: Request, res: Response) => {
+router.get("/pet/findByStatus", async (req: Request, res: Response) => {
   try {
     if (!req.query.status) {
       res.status(400).json({ error: "ステータスが指定されていません" });
@@ -157,7 +157,7 @@ router.get("/pet", async (req: Request, res: Response) => {
 });
 
 // findByTags
-router.get("/pet", async (req: Request, res: Response) => {
+router.get("/pet/findByTags", async (req: Request, res: Response) => {
   try {
     if (!req.query.tagsId) {
       res.status(400).json({ error: "タグIDが指定されていません" });
