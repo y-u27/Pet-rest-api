@@ -1,9 +1,8 @@
 import { Router, Request, Response } from "express";
 import { Pet } from "../../models/Pet";
 import { ObjectId } from "mongodb";
-import { Categories } from "../../models/Categories";
-import { Tags } from "../../models/Tags";
 import mongoose from "mongoose";
+import { connectDB } from "../../config/db";
 
 const router = Router();
 
@@ -18,69 +17,11 @@ router.get("/pet", async (req: Request, res: Response) => {
   }
 });
 
-// GET categories
-router.get("/categories", async (req: Request, res: Response) => {
-  try {
-    const categories = await Categories.find();
-    res.json(categories);
-  } catch (error) {
-    console.error("ペットデータ取得エラー", (error as Error).message);
-    res.status(500).json({ error: "ペットデータ取得に失敗" });
-  }
-});
-
-// GET tags
-router.get("/tags", async (req: Request, res: Response) => {
-  try {
-    const tags = await Tags.find();
-    res.json(tags);
-  } catch (error) {
-    console.error("ペットデータ取得エラー", (error as Error).message);
-    res.status(500).json({ error: "ペットデータ取得に失敗" });
-  }
-});
-
 // POST pet
 router.post("/pet", async (req: Request, res: Response) => {
   try {
     const newPet = new Pet(req.body);
     const result = await newPet.save();
-
-    console.log("保存結果", result);
-
-    res
-      .status(201)
-      .json({ message: "新しいペットが追加されました", data: result });
-  } catch (error) {
-    console.error("追加エラー", (error as Error).message);
-    res.status(500).json({ error: "ペットデータ追加失敗" });
-  }
-});
-
-// POST categories
-router.post("/categories", async (req: Request, res: Response) => {
-  try {
-    const newCategories = new Categories(req.body);
-    const result = await newCategories.save();
-
-    console.log("保存結果", result);
-
-    res
-      .status(201)
-      .json({ message: "新しいペットが追加されました", data: result });
-  } catch (error) {
-    console.error("追加エラー", (error as Error).message);
-    res.status(500).json({ error: "ペットデータ追加失敗" });
-  }
-});
-
-// POST tags
-router.post("/tags", async (req: Request, res: Response) => {
-  try {
-    const newTags = new Tags(req.body);
-    const result = await newTags.save();
-
-    console.log("保存結果", result);
 
     res
       .status(201)
@@ -92,33 +33,37 @@ router.post("/tags", async (req: Request, res: Response) => {
 });
 
 // PUT
-router.put("/pet/:id", async (req: Request, res: Response): Promise<void> => {
+router.put("/pet", async (req: Request, res: Response): Promise<void> => {
   try {
-    const petId = req.params.id;
+    await connectDB();
 
-    if (!ObjectId.isValid(petId)) {
-      res.status(400).json({ error: "無効なID形式です" });
+    const { id, name, status, categoriesId, tagsId } = req.body;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ error: "有効なペットIDを指定してください" });
       return;
     }
 
-    // ObjectIdに変換
-    const objectId = new ObjectId(petId);
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (status) updateData.status = status;
+    if (categoriesId)
+      updateData.categoriesId = new mongoose.Types.ObjectId(categoriesId);
+    if (tagsId) updateData.tagsId = new mongoose.Types.ObjectId(tagsId);
 
-    // データを更新（`new: true` で更新後のデータを取得）
-    const updatePet = await Pet.findByIdAndUpdate(objectId, req.body, {
-      new: true,
-    });
-
-    if (!updatePet) {
-      res
-        .status(404)
-        .json({ error: "指定されたIDのペットが見つかりませんでした" });
+    const updatedPet = await Pet.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    );
+    if (!updatedPet) {
+      res.status(404).json({ error: "指定されたペットが見つかりませんでした" });
       return;
     }
 
     res.status(200).json({
-      message: "登録したペットの情報を更新しました",
-      data: updatePet,
+      massage: "登録したペットの情報を更新",
+      data: { id, name, status, categoriesId, tagsId },
     });
   } catch (error) {
     console.error("更新エラー", (error as Error).message);
@@ -163,11 +108,11 @@ router.get("/pet/findByTags", async (req: Request, res: Response) => {
       res.status(400).json({ error: "タグIDが指定されていません" });
       return;
     }
-    
+
     const tagsId = req.query.tagsId as string;
 
     if (!mongoose.Types.ObjectId.isValid(tagsId)) {
-      res.status(400).json({error:"無効なID形式です"});
+      res.status(400).json({ error: "無効なID形式です" });
       return;
     }
 
